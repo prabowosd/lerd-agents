@@ -1,0 +1,54 @@
+#!/usr/bin/env node
+// `lerd agents:watch`: poll herdr and Orca and send a lerd notification when an
+// agent in a lerd site finishes or waits for input. Runs in the foreground until stopped.
+'use strict';
+const { siteFolders, collectRows, herdrAgents, orcaWorktrees, notify, lerdSites } = require('../lib/agents');
+
+const INTERVAL = Number(process.env.AGENTS_WATCH_INTERVAL || 5) * 1000;
+
+/** Events for agents that went from working to ready, or newly blocked. First sightings never notify. */
+function transitions(prev, rows) {
+  const events = [];
+  for (const r of rows) {
+    const before = prev.get(r.id);
+    if (before === undefined || before === r.state) continue;
+    if (r.state === 'blocked') events.push({ ...r, kind: 'blocked' });
+    else if (before === 'working' && (r.state === 'done' || r.state === 'idle')) events.push({ ...r, kind: 'done' });
+  }
+  return events;
+}
+
+async function loop() {
+  const prev = new Map();
+  let sites = [];
+  let sitesAt = 0;
+  for (;;) {
+    try {
+      if (Date.now() - sitesAt > 60000) {
+        sites = (await lerdSites()).map((s) => ({ name: s.name, folders: siteFolders(s.path) }));
+        sitesAt = Date.now();
+      }
+      const herdr = herdrAgents();
+      const orca = orcaWorktrees();
+      const rows = sites.flatMap((s) => collectRows(s.folders, herdr, orca).map((r) => ({ ...r, site: s.name })));
+      for (const e of transitions(prev, rows)) {
+        const what = e.kind === 'blocked' ? 'needs your input' : 'finished';
+        await notify({
+          title: `${e.site}${e.branch ? `:${e.branch}` : ''} ${e.agent} ${what}`,
+          body: e.summary || `${e.tool} agent ${e.name}`,
+          url: `#sites/${e.site}`,
+          tag: `agents-${e.id}`.toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 64),
+        });
+      }
+      prev.clear();
+      for (const r of rows) prev.set(r.id, r.state);
+    } catch (e) {
+      console.error(new Date().toISOString(), e.message);
+    }
+    await new Promise((r) => setTimeout(r, INTERVAL));
+  }
+}
+
+if (require.main === module) loop();
+
+module.exports = { transitions };

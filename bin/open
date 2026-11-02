@@ -1,0 +1,19 @@
+#!/usr/bin/env node
+// API endpoint for the site tab: POST {tool, folder} opens that checkout in herdr or Orca.
+'use strict';
+const fs = require('node:fs');
+const { openInHerdr, openInOrca, resolveDir } = require('../lib/agents');
+
+try {
+  const { tool, folder } = JSON.parse(fs.readFileSync(0, 'utf8') || '{}');
+  const site = process.env.LERD_SITE_PATH;
+  if (!site) throw new Error('no site');
+  const f = resolveDir(site, folder || site);
+  const label = f.branch ? `${process.env.LERD_SITE}:${f.branch}` : process.env.LERD_SITE;
+  if (tool === 'herdr') console.log(JSON.stringify(openInHerdr(f.path, label)));
+  else if (tool === 'orca') console.log(JSON.stringify(openInOrca(site, f.path)));
+  else throw new Error('tool must be herdr or orca');
+} catch (e) {
+  console.error(e.message);
+  process.exit(1);
+}

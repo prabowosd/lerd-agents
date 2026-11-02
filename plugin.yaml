@@ -1,0 +1,66 @@
+api_version: 1
+name: agents
+lerd: ">=1.38"
+version: 0.1.0
+description: See and open the herdr and Orca coding agents working in each site and its worktrees
+platforms: [macos, linux]
+docs: DOCS.md
+icon: ui/icon.svg
+notifications: true
+requires: [git]
+
+commands:
+  - name: status
+    usage: List the herdr and Orca agents in a site's checkouts
+    run: bin/status
+  - name: watch
+    usage: Notify when an agent finishes or needs input; runs until stopped
+    run: bin/watch
+
+site_commands:
+  - name: open-herdr
+    label: Open in herdr
+    description: Focus or create a herdr workspace in this checkout
+    run: bin/open-herdr
+    timeout: 1m
+  - name: open-orca
+    label: Open in Orca
+    description: Switch Orca to a terminal in this checkout
+    run: bin/open-orca
+    timeout: 1m
+
+hooks:
+  worktree.added: bin/on-worktree
+  worktree.removed: bin/on-worktree
+
+mcp:
+  skill: SKILL.md
+  tools:
+    - name: status
+      description: List the herdr and Orca coding agents working in a lerd site and its worktrees, with each one's state (idle, working, blocked, done)
+      input_schema:
+        type: object
+        properties:
+          site:
+            type: string
+            description: Site name
+        required: [site]
+      run: bin/status
+
+api:
+  - path: status
+    methods: [GET]
+    run: bin/status
+  - path: open
+    methods: [POST]
+    run: bin/open
+    loopback_only: true
+    timeout: 1m
+
+ui:
+  site_tab:
+    title: Agents
+    entry: ui/site.html
+  overview_card:
+    title: Agents
+    entry: ui/card.html

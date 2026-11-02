@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+// Hook for worktree.added / worktree.removed: give a new worktree its herdr
+// workspace and make Orca list it; close only workspaces this plugin created.
+'use strict';
+const fs = require('node:fs');
+const { siteFolders, openInHerdr, ensureOrcaRepo, runJson, store } = require('../lib/agents');
+
+const event = JSON.parse(fs.readFileSync(0, 'utf8') || '{}');
+const name = event.worktree;
+const site = event.site;
+const sitePath = event.site_path;
+const made = store('herdr-workspaces.json');
+const key = `${site}/${name}`;
+const log = (msg) => console.log(`${process.env.LERD_EVENT} ${key}: ${msg}`);
+
+function added() {
+  const f = siteFolders(sitePath).find((x) => x.name === name);
+  if (!f) return log('worktree not found in git');
+  try {
+    const r = openInHerdr(f.path, `${site}:${f.branch || name}`, false);
+    if (r.created) made.write({ ...made.read(), [key]: r.workspace_id });
+    log(`herdr workspace ${r.workspace_id}`);
+  } catch (e) {
+    log(`herdr skipped: ${e.message}`);
+  }
+  try {
+    ensureOrcaRepo(sitePath);
+    log('orca lists it');
+  } catch (e) {
+    log(`orca skipped: ${e.message}`);
+  }
+}
+
+function removed() {
+  const all = made.read();
+  const ws = all[key];
+  if (!ws) return log('no workspace of ours');
+  const panes = runJson('herdr', ['pane', 'list', '--workspace', ws]);
+  if (!panes || !panes.result) return log('herdr not running, kept the record');
+  // An agent still busy there is the user's call, not ours.
+  const busy = (panes.result.panes || []).some((p) => ['working', 'blocked'].includes(p.agent_status));
+  if (busy) return log(`kept herdr workspace ${ws}: an agent is still busy`);
+  runJson('herdr', ['workspace', 'close', ws]);
+  delete all[key];
+  made.write(all);
+  log(`closed herdr workspace ${ws}`);
+}
+
+if (!name || !sitePath) process.exit(0);
+process.env.LERD_EVENT === 'worktree.removed' ? removed() : added();

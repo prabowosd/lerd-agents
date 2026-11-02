@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+// Site command: switch Orca to a terminal in the selected checkout.
+'use strict';
+const { openInOrca, resolveDir } = require('../lib/agents');
+
+try {
+  const f = resolveDir(process.env.LERD_SITE_PATH, process.cwd());
+  const r = openInOrca(process.env.LERD_SITE_PATH, f.path);
+  console.log(`${r.created ? 'Opened a new' : 'Switched to the'} Orca terminal in ${f.path}`);
+} catch (e) {
+  console.error(e.message);
+  process.exit(1);
+}

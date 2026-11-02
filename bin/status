@@ -1,0 +1,33 @@
+#!/usr/bin/env node
+// The agents working in a site's checkouts. Serves the CLI, the dashboard API and the MCP tool.
+'use strict';
+const { siteStatus, lerdSites } = require('../lib/agents');
+
+async function sitePath() {
+  const name = process.env.LERD_SURFACE === 'cli' ? process.argv[2] : '';
+  if (!name && process.env.LERD_SITE_PATH) return process.env.LERD_SITE_PATH;
+  if (!name) throw new Error('usage: lerd agents:status <site> (or run it inside a linked project)');
+  const site = (await lerdSites()).find((s) => s.name === name || s.domain === name);
+  if (!site) throw new Error(`no lerd site named ${name}`);
+  return site.path;
+}
+
+(async () => {
+  const status = siteStatus(await sitePath());
+  if (process.env.LERD_SURFACE !== 'cli') {
+    console.log(JSON.stringify(status));
+    return;
+  }
+  const down = Object.entries(status.tools).filter(([, up]) => !up).map(([t]) => t);
+  if (down.length) console.log(`Not running: ${down.join(', ')}`);
+  if (!status.agents.length) {
+    console.log('No agents in this site.');
+    return;
+  }
+  for (const a of status.agents) {
+    console.log(`${a.state.padEnd(8)} ${a.tool.padEnd(6)} ${a.agent.padEnd(8)} ${a.branch || a.folder}${a.summary ? `  ${a.summary.slice(0, 80)}` : ''}`);
+  }
+})().catch((e) => {
+  console.error(e.message);
+  process.exit(1);
+});

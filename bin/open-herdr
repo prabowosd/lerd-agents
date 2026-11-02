@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+// Site command: focus or create a herdr workspace in the selected checkout.
+'use strict';
+const { openInHerdr, resolveDir } = require('../lib/agents');
+
+try {
+  const f = resolveDir(process.env.LERD_SITE_PATH, process.cwd());
+  const label = f.branch ? `${process.env.LERD_SITE}:${f.branch}` : process.env.LERD_SITE;
+  const r = openInHerdr(f.path, label);
+  console.log(`${r.created ? 'Created' : 'Focused'} herdr workspace ${r.workspace_id} in ${f.path}`);
+} catch (e) {
+  console.error(e.message);
+  process.exit(1);
+}
