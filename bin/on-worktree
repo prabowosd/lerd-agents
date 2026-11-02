@@ -3,7 +3,10 @@
 // workspace and make Orca list it; close only workspaces this plugin created.
 'use strict';
 const fs = require('node:fs');
-const { siteFolders, openInHerdr, ensureOrcaRepo, runJson, store } = require('../lib/agents');
+const { siteFolders, openInHerdr, ensureOrcaRepo, runJson, store, setDeadline } = require('../lib/agents');
+
+// lerd stops a hook at 30 seconds; leave room so every call ends on its own.
+setDeadline(25000);
 
 const event = JSON.parse(fs.readFileSync(0, 'utf8') || '{}');
 const name = event.worktree;

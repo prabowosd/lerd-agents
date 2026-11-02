@@ -1,6 +1,6 @@
 # Agents
 
-Shows the coding agents that [herdr](https://herdr.dev) and Orca run in each site and its worktrees, opens a checkout in either tool, and tells you when an agent finishes. Each part works with whichever of the two tools is running; the other is skipped.
+Shows the coding agents that [herdr](https://herdr.dev) and [Orca](https://github.com/stablyai/orca) run in each site and its worktrees, opens a checkout in either tool, and tells you when an agent finishes. Each part works with whichever of the two tools is running; the other is skipped.
 
 ## Use
 
@@ -21,4 +21,4 @@ Allow the plugin's notifications when lerd asks, or later with `lerd plugin noti
 
 ## Requirements
 
-`herdr` and `orca` on the PATH lerd runs plugins with. herdr needs its server running (an open herdr session); Orca needs the app or `orca serve` running.
+`herdr`, and Orca's CLI: `orca` on macOS, `orca-ide` on Linux (bare `orca` there is GNOME's screen reader, so the plugin never runs it). Set `HERDR_BIN` or `ORCA_BIN` when they live somewhere unusual. herdr needs its server running (an open herdr session); Orca needs the app or `orca serve` running.

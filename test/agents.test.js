@@ -55,3 +55,25 @@ test('notifies on working to done and on newly blocked, never on first sight', (
   ];
   assert.deepStrictEqual(transitions(prev, rows).map((e) => [e.id, e.kind]), [['a', 'done'], ['b', 'blocked']]);
 });
+
+const { orcaName, isOrcaAnswer, setDeadline, runJson } = require('../lib/agents');
+
+test('Linux looks up orca-ide only, never the screen reader name', () => {
+  assert.strictEqual(orcaName('linux', {}), 'orca-ide');
+  assert.strictEqual(orcaName('darwin', {}), 'orca');
+  assert.strictEqual(orcaName('linux', { ORCA_BIN: '/opt/orca/bin/orca-ide' }), '/opt/orca/bin/orca-ide');
+  assert.strictEqual(orcaName('linux', { ORCA_CLI_COMMAND: 'orca-dev' }), 'orca-dev');
+});
+
+test("a binary counts as Orca only when it answers with Orca's JSON", () => {
+  assert.ok(isOrcaAnswer('{"id":"x","ok":true,"result":{}}'));
+  assert.ok(isOrcaAnswer('{"ok":false,"error":{"code":"runtime_unreachable"}}'));
+  assert.ok(!isOrcaAnswer('The following are not valid: --json'));
+  assert.ok(!isOrcaAnswer('{"result":{}}'));
+});
+
+test('a spent deadline skips calls instead of running them', () => {
+  setDeadline(0);
+  assert.strictEqual(runJson('git', ['--version']), null);
+  setDeadline(Infinity);
+});

@@ -33,12 +33,14 @@ async function loop() {
       const rows = sites.flatMap((s) => collectRows(s.folders, herdr, orca).map((r) => ({ ...r, site: s.name })));
       for (const e of transitions(prev, rows)) {
         const what = e.kind === 'blocked' ? 'needs your input' : 'finished';
-        await notify({
+        const code = await notify({
           title: `${e.site}${e.branch ? `:${e.branch}` : ''} ${e.agent} ${what}`,
           body: e.summary || `${e.tool} agent ${e.name}`,
           url: `#sites/${e.site}`,
           tag: `agents-${e.id}`.toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 64),
         });
+        if (code === 403) console.error('Notifications are off for this plugin: lerd plugin notifications agents on');
+        else if (code !== 204) console.error(`lerd answered ${code} to a notification`);
       }
       prev.clear();
       for (const r of rows) prev.set(r.id, r.state);

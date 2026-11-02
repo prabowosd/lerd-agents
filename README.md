@@ -1,6 +1,6 @@
 # lerd-agents
 
-A [lerd](https://lerd.sh) plugin that connects lerd sites to the coding agents run by [herdr](https://herdr.dev) and Orca. It works with whichever of the two is running and skips the other.
+A [lerd](https://lerd.sh) plugin that connects lerd sites to the coding agents run by [herdr](https://herdr.dev) and [Orca](https://github.com/stablyai/orca). It works with whichever of the two is running and skips the other.
 
 ![The Agents tab on a site](docs/tab.png)
 
@@ -17,14 +17,15 @@ A [lerd](https://lerd.sh) plugin that connects lerd sites to the coding agents r
 
 ## What it reads, changes and sends
 
-- **Reads**: lerd's `/api/sites` through the token lerd gives it; `git worktree list` and each worktree's `.git` file in the site's own folder; `herdr agent list`, `herdr pane list`, `orca worktree ps`, `orca repo list` and `orca terminal list`. It reads no `.env`, keys or other secrets.
+- **Reads**: lerd's `/api/sites` through the token lerd gives it; `git worktree list` and each worktree's `.git` file in the site's own folder; `herdr agent list`, `herdr pane list`, and Orca's `status`, `worktree ps`, `repo list` and `terminal list`. It reads no `.env`, keys or other secrets.
 - **Changes**: in herdr, **Open in herdr** and the `worktree.added` hook create a workspace in a checkout (or focus the one already there); `worktree.removed` closes only a workspace the hook created, and leaves it open while an agent in it is working or blocked. In Orca, **Open in Orca** and the hook add the site's repository when Orca does not know it yet and set it to show worktrees Orca did not create; **Open in Orca** also switches to, or creates, a terminal in the checkout. In its own data folder it keeps `herdr-workspaces.json`, the workspaces the hook created. Nothing else is written, and lerd itself is never changed.
 - **Sends over the network**: nothing. Every call goes to lerd's local API or to the local `herdr` and `orca` commands.
 
 ## Requirements
 
 - lerd 1.38 or newer, `git`, and Node (lerd's own Node works).
-- herdr and Orca are optional: the plugin uses each one it finds, on the PATH or where they usually install (`/opt/homebrew/bin`, `/usr/local/bin`, `~/.local/bin`, `~/.cargo/bin`, `/Applications/Orca.app/Contents/Resources/bin`), or at `HERDR_BIN` / `ORCA_BIN`. herdr needs its server running, Orca the app or `orca serve`.
+- herdr and Orca are optional: the plugin uses each one it finds, on the PATH or where they usually install (`/opt/homebrew/bin`, `/usr/local/bin`, `/usr/bin`, `~/.local/bin`, `~/.cargo/bin`, `/Applications/Orca.app/Contents/Resources/bin`), or at `HERDR_BIN` / `ORCA_BIN`. herdr needs its server running, Orca the app or `orca serve`.
+- Orca's CLI is `orca` on macOS and `orca-ide` on Linux, where `/usr/bin/orca` is GNOME's screen reader. On Linux the plugin only looks for `orca-ide` and never runs a bare `orca`, and on either platform it treats a binary as Orca only once `status --json` answers with Orca's JSON.
 
 ## Install
 

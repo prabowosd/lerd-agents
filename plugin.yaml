@@ -1,7 +1,7 @@
 api_version: 1
 name: agents
 lerd: ">=1.38"
-version: 0.1.0
+version: 0.1.1
 description: See and open the herdr and Orca coding agents working in each site and its worktrees
 platforms: [macos, linux]
 docs: DOCS.md
