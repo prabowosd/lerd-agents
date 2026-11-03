@@ -77,3 +77,15 @@ test('a spent deadline skips calls instead of running them', () => {
   assert.strictEqual(runJson('git', ['--version']), null);
   setDeadline(Infinity);
 });
+
+test('cached shares one result across calls until it expires', () => {
+  const { cached } = require('../lib/agents');
+  const dir = require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'agents-'));
+  process.env.LERD_PLUGIN_DATA = dir;
+  let runs = 0;
+  const fn = () => ++runs;
+  assert.strictEqual(cached('t', 60000, fn), 1);
+  assert.strictEqual(cached('t', 60000, fn), 1);
+  assert.strictEqual(cached('t', 0, fn), 2);
+  delete process.env.LERD_PLUGIN_DATA;
+});

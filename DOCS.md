@@ -4,8 +4,8 @@ Shows the coding agents that [herdr](https://herdr.dev) and [Orca](https://githu
 
 ## Use
 
-- **Agents tab** on a site: every agent in the site's checkouts with its state and last message, refreshed every five seconds, and a herdr and an Orca button per checkout.
-- **Overview card**: a count of agents per state. Switch it on from the plugin icon in the site's header, or `lerd plugin card agents on` in the project.
+- **Agents tab** on a site: every agent in the site's checkouts with its state and last message, refreshed every five seconds while the page is visible, and a herdr and an Orca button per checkout.
+- **Overview card**: a count of agents per state, refreshed every 30 seconds. Switch it on from the plugin icon in the site's header, or `lerd plugin card agents on` in the project.
 - **Commands menu**: **Open in herdr** focuses the herdr workspace already in the selected checkout, or creates one. **Open in Orca** adds the site's repository to Orca when it is missing, then switches to a terminal in the checkout, creating one when it has none.
 - `lerd agents:status [site]` lists the agents in the terminal; assistants get the same through the `agents_status` tool.
 

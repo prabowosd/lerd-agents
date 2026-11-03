@@ -53,15 +53,22 @@
     if (b) open(b.dataset.tool, b.dataset.folder);
   });
 
+  // Each poll spawns CLIs on the host: skip while hidden, never overlap, cards poll slower.
+  let busy = false;
   async function refresh() {
+    if (busy || document.hidden) return;
+    busy = true;
     try {
       const body = await lerd.api('status?site=' + encodeURIComponent(site));
       draw(typeof body === 'string' ? JSON.parse(body) : body);
       alertBox('');
     } catch (e) {
       alertBox(e.message);
+    } finally {
+      busy = false;
     }
   }
   refresh();
-  setInterval(refresh, 5000);
+  setInterval(refresh, compact ? 30000 : 5000);
+  document.addEventListener('visibilitychange', refresh);
 })();

@@ -6,8 +6,8 @@ A [lerd](https://lerd.sh) plugin that connects lerd sites to the coding agents r
 
 ## What it adds to lerd
 
-- **Site tab "Agents"**: every herdr and Orca agent in the site's checkouts (the main one and each worktree) with its state and last message, refreshed every five seconds, plus a herdr and an Orca button per checkout.
-- **Overview card "Agents"**: a count of agents per state, off until switched on for a site.
+- **Site tab "Agents"**: every herdr and Orca agent in the site's checkouts (the main one and each worktree) with its state and last message, refreshed every five seconds while the page is visible, plus a herdr and an Orca button per checkout.
+- **Overview card "Agents"**: a count of agents per state, refreshed every 30 seconds, off until switched on for a site.
 - **Site commands** in the Commands menu: **Open in herdr** and **Open in Orca**.
 - **Commands**: `lerd agents:status [site]` lists the agents in a site; `lerd agents:watch` runs in the foreground and sends a notification when an agent finishes or starts waiting for input.
 - **Hooks** on `worktree.added` and `worktree.removed`.
